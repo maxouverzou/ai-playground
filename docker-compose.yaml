@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant-vector-db
+    restart: always
+    ports:
+      - "6333:6333" # HTTP API and Dashboard
+      - "6334:6334" # gRPC API
+    environment:
+      # Optional: Enable an API key for security
+      # - QDRANT__SERVICE__API_KEY=your_secret_api_key
+
+      # Optional: Adjust log level
+      - QDRANT__LOG_LEVEL=INFO
+    volumes:
+      # Map the named volume to the internal storage path
+      - qdrant_data:/qdrant/storage
+
+# Define the volume globally here so Docker manages it
+volumes:
+  qdrant_data:
+    driver: local

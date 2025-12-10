@@ -1,3 +1,4 @@
+qdrant-client
 pydantic
 langchain
 deepagents==0.3.0
@@ -10,3 +11,9 @@ markdownify
 sqlmodel
 ipywidgets
 ipython
+unstructured
+markdown
+
+langchain-qdrant
+qdrant_client
+requests-cache
