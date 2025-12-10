@@ -4,3 +4,9 @@ deepagents==0.3.0
 tavily==1.1.0
 python-dotenv==1.2.1
 langchain-google-genai==4.0.0
+requests
+beautifulsoup4
+markdownify
+sqlmodel
+ipywidgets
+ipython
