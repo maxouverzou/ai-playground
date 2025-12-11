@@ -17,8 +17,49 @@ services:
     volumes:
       # Map the named volume to the internal storage path
       - qdrant_data:/qdrant/storage
+  opensearch-node:
+    image: opensearchproject/opensearch:latest
+    container_name: opensearch-node
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-node
+      # crucial for single-node development mode
+      - discovery.type=single-node
+      # Minimum memory allocation (adjust based on your machine)
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      # Set the initial admin password (REQUIRED for OpenSearch 2.12+)
+      # Must include: 1 uppercase, 1 lowercase, 1 digit, 1 special char
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=StrongPassword123!
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      # PERSISTENCE: Maps the internal data folder to a docker volume
+      - opensearch-data:/usr/share/opensearch/data
+    ports:
+      - "9200:9200" # REST API port
+      - "9600:9600" # Performance Analyzer port
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    ports:
+      - "5601:5601" # Web Interface port
+    expose:
+      - "5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["https://opensearch-node:9200"]'
+    depends_on:
+      - opensearch-node
+
+
 
 # Define the volume globally here so Docker manages it
 volumes:
+  opensearch-data:
   qdrant_data:
     driver: local

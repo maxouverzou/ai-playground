@@ -4,7 +4,7 @@ langchain
 deepagents==0.3.0
 tavily==1.1.0
 python-dotenv==1.2.1
-langchain-google-genai==4.0.0
+langchain-google-genai
 requests
 beautifulsoup4
 markdownify
@@ -17,3 +17,5 @@ markdown
 langchain-qdrant
 qdrant_client
 requests-cache
+langchain_elasticsearch
+opensearch-py
