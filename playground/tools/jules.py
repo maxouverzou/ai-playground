@@ -8,7 +8,7 @@ class CreateJulesSessionInput(BaseModel):
     """Input for create_jules_session"""
     prompt: str = Field(description="The task description for Jules to execute.")
     fullRepositoryName: str = Field(
-        description="The full repository name (e.g., 'sources/github-myorg-myrepo')."
+        description="The full repository name in 'owner/repo' format (e.g., 'my-org/my-repo')."
     )
     repositoryBranch: str = Field(
         default="master",
@@ -43,6 +43,17 @@ def create_jules_session(
     if not api_key:
         raise ValueError("JULES_API_KEY environment variable is not set.")
 
+    # Format the repository name to the Jules API expected format
+    # Expecting "owner/repo" -> "sources/github-owner-repo"
+    parts = fullRepositoryName.split('/')
+    if len(parts) != 2 or not parts[0] or not parts[1]:
+        raise ValueError(f"fullRepositoryName must be in 'owner/repo' format. Got: {fullRepositoryName}")
+
+    owner, repo = parts
+    # The Jules API convention for GitHub sources seems to be 'sources/github-{owner}-{repo}'
+    # We follow this convention based on the request.
+    api_source_name = f"sources/github-{owner}-{repo}"
+
     url = "https://jules.googleapis.com/v1alpha/sessions"
     headers = {
         "x-goog-api-key": api_key,
@@ -52,7 +63,7 @@ def create_jules_session(
     payload = {
         "prompt": prompt,
         "sourceContext": {
-            "source": fullRepositoryName,
+            "source": api_source_name,
             "githubRepoContext": {
                 "startingBranch": repositoryBranch
             }
