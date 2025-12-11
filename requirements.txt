@@ -19,3 +19,6 @@ qdrant_client
 requests-cache
 langchain_elasticsearch
 opensearch-py
+typer[all]
+
+langchain-mcp-adapters
