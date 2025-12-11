@@ -5,8 +5,18 @@ from langchain.tools import tool
 from pydantic import BaseModel, Field
 from tavily import TavilyClient
 
-# step 3: create the tool
-tavily_client = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
+client: TavilyClient | None = None
+
+def _get_client():
+    global client
+
+    if not client:
+        api_key = os.environ.get("TAVILY_API_KEY")
+        if not api_key:
+            raise ValueError("TAVILY_API_KEY environment variable is not set.")
+        client = TavilyClient(api_key=api_key)
+
+    return client
 
 class TavilyCrawlInput(BaseModel):
     """Input for tavily crawl"""
@@ -55,7 +65,7 @@ def tavily_crawl(
 
     Use this to discover new content on high-value websites.
     """
-    return tavily_client.crawl(url, instruction=instruction, max_depth=max_depth, max_breadth=max_breadth, limit=limit,
+    return _get_client().crawl(url, instruction=instruction, max_depth=max_depth, max_breadth=max_breadth, limit=limit,
                                select_paths=select_paths, select_domains=select_domains, exclude_paths=exclude_paths,
                                exclude_domains=exclude_domains, allow_external=allow_external,
                                include_images=include_images, extract_depth=extract_depth)
@@ -79,7 +89,7 @@ def tavily_extract(
 
     Use this to get the content of high-value pages.
     """
-    return tavily_client.extract(urls, extract_depth=extract_depth)
+    return _get_client().extract(urls, extract_depth=extract_depth)
 
 
 class TavilySearchInput(BaseModel):
@@ -106,7 +116,7 @@ def tavily_search(
 
     Use this to explore a topic, find relevant URLs, or answer specific factual questions.
     """
-    return tavily_client.search(
+    return _get_client().search(
         query,
         max_results=max_results,
         include_raw_content=include_raw_content,
