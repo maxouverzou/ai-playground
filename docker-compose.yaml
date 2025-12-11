@@ -56,7 +56,13 @@ services:
     depends_on:
       - opensearch-node
 
-
+  github-mcp-server:
+    build: assets/github-mcp-server
+    container_name: github-mcp-server
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./secrets.env
 
 # Define the volume globally here so Docker manages it
 volumes:
