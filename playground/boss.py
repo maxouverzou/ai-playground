@@ -15,6 +15,17 @@ Your task today: $title
 $body
 """)
 
+def add_comment_to_issue(repo_owner, repo_name, issue_number, comment_body):
+    """
+    Adds a comment to a GitHub issue.
+    """
+    try:
+        api = GhApi(owner=repo_owner, repo=repo_name, token=os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN"))
+        api.issues.create_comment(owner=repo_owner, repo=repo_name, issue_number=issue_number, body=comment_body)
+        print(f"Comment added to issue #{issue_number}.")
+    except Exception as e:
+        print(f"Error adding comment to GitHub issue: {e}")
+
 def get_open_issues(repo_owner, repo_name):
     """
     Retrieves open issues with the "status: ready" label from a GitHub repository, sorted by priority.
@@ -198,6 +209,7 @@ def main():
                                              automation_mode)
         if session_url:
             print(f"Jules session created successfully: {session_url}")
+            add_comment_to_issue(repo_owner, repo_name, issue.number, f"Jules session created: {session_url}")
             issues_processed += 1
 
 
