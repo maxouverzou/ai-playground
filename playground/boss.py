@@ -17,7 +17,7 @@ $body
 
 def get_open_issues(repo_owner, repo_name):
     """
-    Retrieves all open issues from a GitHub repository, sorted by creation date.
+    Retrieves open issues with the "status: ready" label from a GitHub repository, sorted by priority.
 
     Args:
         repo_owner: The owner of the repository.
@@ -28,14 +28,30 @@ def get_open_issues(repo_owner, repo_name):
     """
     try:
         api = GhApi(owner=repo_owner, repo=repo_name, token=os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN"))
-        issues = api.issues.list_for_repo(state='open', sort='created', direction='asc')
+        issues = api.issues.list_for_repo(state='open', labels='status: ready')
         if issues:
-            return [
+            filtered_issues = [
                 issue
                 for issue in issues
                 if "pull_request" not in issue
-                and "duplicate" not in [l.name for l in issue.labels]
             ]
+
+            priority_order = {
+                "priority: critical": 4,
+                "priority: high": 3,
+                "priority: medium": 2,
+                "priority: low": 1,
+            }
+
+            def get_priority(issue):
+                labels = {l.name for l in issue.labels}
+                for label, priority in priority_order.items():
+                    if label in labels:
+                        return priority
+                return 0  # Lowest priority
+
+            sorted_issues = sorted(filtered_issues, key=get_priority, reverse=True)
+            return sorted_issues
         else:
             return None
     except Exception as e:
@@ -136,6 +152,7 @@ def main():
     parser = argparse.ArgumentParser(description="Create a Jules session from a GitHub issue.")
     parser.add_argument("repository", help="The GitHub repository in 'owner/repo' format.")
     parser.add_argument("--branch", default="master", help="The starting branch for the Jules session.")
+    parser.add_argument("--count", type=int, default=1, help="Number of issues to send to Jules for processing.")
     parser.add_argument("--no-pr", action="store_true", help="Do not create a pull request.")
     parser.set_defaults(require_plan_approval=True)
     parser.add_argument("--no-plan-approval", dest="require_plan_approval", action="store_false",
@@ -153,7 +170,7 @@ def main():
     issues = get_open_issues(repo_owner, repo_name)
 
     if not issues:
-        print("No open issues found.")
+        print("No open issues with 'status: ready' label found.")
         return
 
     print("Checking for active Jules sessions...")
@@ -162,7 +179,12 @@ def main():
 
     automation_mode = "AUTO_CREATE_PR" if not args.no_pr else None
 
+    issues_processed = 0
     for issue in issues:
+        if issues_processed >= args.count:
+            print(f"Processed {args.count} issues, stopping.")
+            break
+
         title = f"{repo_full_name}#{issue.number}"
         if title in active_titles:
             print(f"Jules is already working on issue #{issue.number}.")
@@ -176,9 +198,8 @@ def main():
                                              automation_mode)
         if session_url:
             print(f"Jules session created successfully: {session_url}")
-        
-        # We've found an issue and created a session, so we can stop.
-        return
+            issues_processed += 1
+
 
     print("All open issues are already being worked on by Jules.")
 

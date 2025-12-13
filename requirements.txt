@@ -19,3 +19,4 @@ ghapi
 ruff
 tree-sitter
 tree-sitter-java
+tree-sitter-markdown
