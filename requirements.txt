@@ -1,4 +1,3 @@
-qdrant-client
 pydantic
 langchain
 deepagents==0.3.0
@@ -13,12 +12,11 @@ ipywidgets
 ipython
 unstructured
 markdown
-
-langchain-qdrant
-qdrant_client
-requests-cache
-langchain_elasticsearch
 opensearch-py
 typer[all]
-
 langchain-mcp-adapters
+ghapi
+ruff
+tree-sitter
+tree-sitter-java
+tree-sitter-markdown

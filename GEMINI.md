@@ -1,0 +1,2 @@
+- Make sure you use the virtual environment (in ./venv).
+- Try importing a python dependency before deciding that you need to install it.
